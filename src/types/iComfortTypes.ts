@@ -34,6 +34,11 @@ export type ThermostatInfo = {
   System_Name?: string;
 };
 
+export type UpdateThresholdRequest = {
+  Heat_Set_Point?: number;
+  Cool_Set_Point?: number;
+};
+
 export type getThermostatInfoResponse = BaseResponse & {
   tStatInfo: ThermostatInfo[];
 };

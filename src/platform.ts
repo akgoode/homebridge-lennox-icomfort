@@ -116,7 +116,7 @@ export class LennoxIComfortPlatform implements DynamicPlatformPlugin {
           // generate a unique id for the accessory this should be generated from
           // something globally unique, but constant, for example, the device serial
           // number or MAC address
-          const uuid = this.api.hap.uuid.generate(thermostat.GatewaySN);
+          const uuid = this.api.hap.uuid.generate('dev' + thermostat.GatewaySN);
           // see if an accessory with the same uuid has already been registered and restored from
           // the cached devices we stored in the `configureAccessory` method above
           const existingAccessory: PlatformAccessory<UnknownContext> | undefined =
