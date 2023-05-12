@@ -1,16 +1,50 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "LennoxIComfort",
   "pluginType": "platform",
   "singular": true,
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "temperatureUnit": {
+        "title": "Temperature Unit",
         "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "F",
+        "oneOf": [
+          {
+            "title": "C",
+            "enum": [
+              "C"
+            ]
+          },
+          {
+            "title": "F",
+            "enum": [
+              "F"
+            ]
+          }
+        ]
       }
+    },
+    "required": [
+      "username",
+      "password",
+      "temperatureUnit"
+    ]
+  },
+  "layout": [
+    {
+      "type": "section",
+      "items": [
+        "username",
+        "password",
+        "temperatureUnit"
+      ]
     }
-  }
+  ]
 }
