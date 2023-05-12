@@ -294,7 +294,7 @@ export class Thermostat {
         if (newCoolPoint !== Cool_Set_Point) {
           this.service.getCharacteristic(this.platform.Characteristic.CoolingThresholdTemperature).updateValue(fToC(newCoolPoint));
         }
-        this._logInfo('setHeatingThresholdTemperature: ' + cToF(value));
+        `Setting heating threshold temperature to ${valueInF}`;
       } else {
         this._logDebug('Heating threshold hasnt changed');
       }
@@ -343,7 +343,7 @@ export class Thermostat {
         if (newHeatPoint !== Heat_Set_Point) {
           this.service.getCharacteristic(this.platform.Characteristic.HeatingThresholdTemperature).updateValue(fToC(newHeatPoint));
         }
-        this._logInfo(`Setting heating threshold temperature to ${cToF(value)}`);
+        this._logInfo(`Setting cooling threshold temperature to ${valueInF}`);
       } else {
         this._logDebug('Cooling threshold hasnt changed');
       }
