@@ -287,7 +287,7 @@ export class Thermostat {
         if (Cool_Set_Point - valueInF < 3) {
           newCoolPoint = valueInF + 3;
           newOptions.Cool_Set_Point = newCoolPoint;
-          this._logInfo(`Cooling threshold within 3 degress of cooling threshold, adjusting cooling threshold to ${newCoolPoint}`);
+          this._logInfo(`Cooling threshold within 3 degress of heating threshold, adjusting cooling threshold to ${newCoolPoint}`);
         }
         const newSettings = { ...thermostat, ...newOptions };
         await this._setThermostatInfo(newSettings);
