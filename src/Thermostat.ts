@@ -7,7 +7,7 @@ import { ThermostatInfo } from './types/iComfortTypes';
 export class Thermostat {
   private service: Service;
 
-  gatewaySN: any;
+  gatewaySN: string;
   targetHeatingCoolingState: any;
 
 
@@ -88,7 +88,7 @@ export class Thermostat {
     });
   }
 
-  _setThermostatInfo(newSettings: ThermostatInfo): Promise<any> {
+  _setThermostatInfo(newSettings: ThermostatInfo): Promise<number> {
     return this.platform.icomfort.setThermostatInfo(newSettings);
   }
 
@@ -122,9 +122,6 @@ export class Thermostat {
   async handleTargetHeatingCoolingStateGet(): Promise<number | any> {
     this._logDebug('Triggered GET TargetHeatingCoolingState');
 
-    // set this to a valid value for TargetHeatingCoolingState
-    const currentValue = this.platform.Characteristic.TargetHeatingCoolingState.OFF;
-
     try {
       const thermostat: ThermostatInfo = await this._fetchThermostatInfo();
 
@@ -150,9 +147,6 @@ export class Thermostat {
     } catch (e) {
       return e;
     }
-
-
-    return currentValue;
   }
 
   /**

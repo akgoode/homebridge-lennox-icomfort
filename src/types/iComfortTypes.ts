@@ -52,6 +52,6 @@ export interface iComfort {
   getThermostatLookupInfo: (params: RequestParams) => Promise<BaseResponse>;
   getThermostatScheduleInfo: (params: RequestParams) => Promise<BaseResponse>;
   validateUser: (params: RequestParams) => Promise<ValidateUserResponse>;
-  setThermostatInfo: (settings: ThermostatInfo) => Promise<any>;
+  setThermostatInfo: (settings: ThermostatInfo) => Promise<number>;
 }
 
