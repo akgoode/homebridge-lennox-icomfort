@@ -9,7 +9,9 @@
 
 # Lennox iComfort Thermostats
 
-This plugin is designed to support non-homekit supported iComfort Thermostats.  The list of currently supported thermostats is:
+This plugin is designed to support non-homekit supported iComfort Thermostats.  The existing plugin depends upon all thermostats being configured with zones to work, so I created this using the current TS template and so that it will work with thermostats as individual accessories.  Down the line I will consider adding more features like zone control.
+
+The list of currently supported thermostats is:
 
 - Wifi Thermostat
 
@@ -19,6 +21,8 @@ Configuration requires 3 values:
 - Username: This is the username required to sign into https://www.myicomfort.com
 - Password: This is the password for the same login
 - Temperature Units: Only supports F right now.  Leave it at F.
+
+It is best to run this in a child bridge until I have more users and understand what issues there are.  No slowdowns so far.
 
 ### What is there today:
 - All the features for a base thermostat implementation in Homebridge
@@ -33,7 +37,11 @@ Configuration requires 3 values:
 
 ### Roadmap:
 - Zone Support
-
+- Temperature Unit Switching
+- More device support
 
 ### Dependencies
 - icomfort - https://www.npmjs.com/package/icomfort
+
+### Feedback
+All feedback is welcome.  Please submit any issues to https://github.com/akgoode/homebridge-lennox-icomfort/issues
