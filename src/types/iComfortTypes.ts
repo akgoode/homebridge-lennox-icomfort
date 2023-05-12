@@ -9,6 +9,7 @@ export type getSystemsInfoResponse = BaseResponse & {
 };
 
 export type ThermostatInfo = {
+  deviceFirmware: any;
   Away_Mode: number;
   Central_Zoned_Away: number;
   ConnectionStatus: string;
@@ -51,6 +52,6 @@ export interface iComfort {
   getThermostatLookupInfo: (params: RequestParams) => Promise<BaseResponse>;
   getThermostatScheduleInfo: (params: RequestParams) => Promise<BaseResponse>;
   validateUser: (params: RequestParams) => Promise<ValidateUserResponse>;
-  setThermostatInfo: (params: RequestParams) => Promise<number>;
+  setThermostatInfo: (settings: ThermostatInfo) => Promise<any>;
 }
 

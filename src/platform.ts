@@ -111,6 +111,7 @@ export class LennoxIComfortPlatform implements DynamicPlatformPlugin {
           const deviceMetaData = devices.Systems.find(d => d.Gateway_SN === thermostat.GatewaySN);
 
           thermostat.System_Name = deviceMetaData.System_Name;
+          thermostat.deviceFirmware = deviceMetaData.Firmware_Ver;
 
           // generate a unique id for the accessory this should be generated from
           // something globally unique, but constant, for example, the device serial
