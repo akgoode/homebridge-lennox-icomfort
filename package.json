@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge Lennox IComfort",
   "name": "homebridge-lennox-icomfort",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Integrates Lennox iComfort systems with homebridge.",
   "license": "Apache-2.0",
   "repository": {
