@@ -48,6 +48,11 @@ export type ValidateUserResponse = {
   msg_desc: string;
 };
 
+export type ValidHeatCoolSetPointState = {
+  Cool_Set_Point: number;
+  Heat_Set_Point: number;
+};
+
 export interface iComfort {
   getBuildingsInfo: (params: RequestParams) => Promise<BaseResponse>;
   getGatewayInfo: (params: RequestParams) => Promise<BaseResponse>;

@@ -2,13 +2,20 @@ import { Service, PlatformAccessory } from 'homebridge';
 
 import { LennoxIComfortPlatform } from './platform';
 import { TemperatureUnits } from './types/config';
-import { ThermostatInfo, UpdateThresholdRequest } from './types/iComfortTypes';
+import { ThermostatInfo, UpdateThresholdRequest, ValidHeatCoolSetPointState } from './types/iComfortTypes';
 
-const heatingCoolingStates = {
-  0: 'OFF',
-  1: 'HEAT',
-  2: 'COOL',
-  3: 'AUTO',
+const heatingCoolingStates = [
+  'OFF',
+  'HEAT',
+  'COOL',
+  'AUTO',
+];
+
+const homekitToIComfortStates = {
+  0: 0,
+  1: 1,
+  2: 2,
+  3: 3,
 };
 
 export class Thermostat {
@@ -92,13 +99,55 @@ export class Thermostat {
       GatewaySN: this.gatewaySN,
       TempUnit: 0,
     }).then(res => {
-      return res.tStatInfo.find(this._getThermostatBySN.bind(this)) as ThermostatInfo;
+      const thermostat = res.tStatInfo.find(this._getThermostatBySN.bind(this)) as ThermostatInfo;
+      this._logDebug(JSON.stringify(thermostat));
+      return thermostat;
     });
   }
 
   _setThermostatInfo(newSettings: ThermostatInfo): Promise<number> {
     this._logDebug('Setting thermostat data');
     return this.platform.icomfort.setThermostatInfo(newSettings);
+  }
+
+  _getValidHeatingCoolingSetPoints(thermostat: ThermostatInfo, targetTemperature: number): ValidHeatCoolSetPointState {
+
+    const { Heat_Set_Point, Cool_Set_Point, Operation_Mode } = thermostat;
+
+    this._logDebug(targetTemperature + '');
+
+    const validState = {
+      Cool_Set_Point,
+      Heat_Set_Point,
+    };
+
+    if (Operation_Mode === 0) {
+      this._logDebug('Operation mode OFF');
+    }
+    // heat
+    else if (Operation_Mode === 1) {
+      validState.Heat_Set_Point = targetTemperature;
+      if (Cool_Set_Point < targetTemperature + 3) {
+        validState.Cool_Set_Point = targetTemperature + 3;
+      }
+
+    }
+    // cool
+    else if (Operation_Mode === 2) {
+      validState.Cool_Set_Point = targetTemperature;
+      if (Heat_Set_Point > targetTemperature - 3) {
+        validState.Heat_Set_Point = targetTemperature - 3;
+      }
+    }
+    // auto
+    else if (Operation_Mode === 3) {
+      this._logDebug(`Operation mode is ${heatingCoolingStates[3]}, not required`);
+
+    }
+
+    this._logDebug(JSON.stringify(validState));
+    return validState;
+
   }
 
   async handleCurrentHeatingCoolingStateGet(): Promise<number | any> {
@@ -161,8 +210,24 @@ export class Thermostat {
   /**
    * Handle requests to set the "Target Heating Cooling State" characteristic
    */
-  handleTargetHeatingCoolingStateSet(value) {
+  async handleTargetHeatingCoolingStateSet(value): Promise<void | any> {
     this._logDebug('Triggered SET TargetHeatingCoolingState:', value);
+
+    try {
+      const thermostat: ThermostatInfo = await this._fetchThermostatInfo();
+
+      const newSettings = { ...thermostat };
+
+      newSettings.Operation_Mode = homekitToIComfortStates[value];
+
+      this._logDebug(`Cool: ${newSettings.Cool_Set_Point} Heat: ${newSettings.Heat_Set_Point}`);
+
+      await this._setThermostatInfo(newSettings);
+      this._logInfo(`Setting target heating/cooling state to ${heatingCoolingStates[value]} (${homekitToIComfortStates[value]})`);
+    } catch (e) {
+      this.platform.log.error(e as string);
+      return e;
+    }
   }
 
   /**
@@ -186,18 +251,21 @@ export class Thermostat {
   async handleTargetTemperatureGet() {
     this._logDebug('Triggered GET TargetTemperature');
 
-    // set this to a valid value for TargetTemperature
     const thermostat = await this._fetchThermostatInfo();
+    const { Indoor_Temp, Cool_Set_Point, Heat_Set_Point, Operation_Mode } = thermostat;
 
-    let targetTemperature = 0;
-    if (thermostat.Operation_Mode === 0) {
-      targetTemperature = thermostat.Cool_Set_Point;
-    } else if (thermostat.Operation_Mode === 1) {
-      targetTemperature = thermostat.Heat_Set_Point;
-    } else if (thermostat.Operation_Mode === 2) {
-      targetTemperature = thermostat.Cool_Set_Point;
-    } else if (thermostat.Operation_Mode === 3) {
-      targetTemperature = thermostat.Indoor_Temp;
+    let targetTemperature = Indoor_Temp;
+    if (Operation_Mode === 1) {
+      targetTemperature = Heat_Set_Point;
+    } else if (Operation_Mode === 2) {
+      targetTemperature = Cool_Set_Point;
+    } else if (Operation_Mode === 3) {
+
+      if (Indoor_Temp > Cool_Set_Point) {
+        targetTemperature = Cool_Set_Point;
+      } else if (Indoor_Temp < Heat_Set_Point) {
+        targetTemperature = Heat_Set_Point;
+      }
     }
     this._logInfo(`Target temperature: ${targetTemperature}F ${fToC(targetTemperature)}C`);
     return fToC(targetTemperature);
@@ -211,25 +279,21 @@ export class Thermostat {
     try {
       const thermostat = await this._fetchThermostatInfo();
 
-      const newOptions = { ...thermostat };
-      if (thermostat.Operation_Mode === 0) {
-        newOptions.Cool_Set_Point = cToF(value);
-      } else if (thermostat.Operation_Mode === 1) {
-        newOptions.Heat_Set_Point = cToF(value);
-      } else if (thermostat.Operation_Mode === 2) {
-        newOptions.Cool_Set_Point = cToF(value);
+      const valueInF = cToF(value);
 
-      }
+      const validSetPoints = this._getValidHeatingCoolingSetPoints(thermostat, valueInF);
+
+      this._logDebug(JSON.stringify(validSetPoints));
 
       if (thermostat.Operation_Mode !== 3) {
-        const newSettings = { ...thermostat, newOptions };
-        this._setThermostatInfo(newSettings);
+
+
+        const newSettings = { ...thermostat, ...validSetPoints };
+        await this._setThermostatInfo(newSettings);
         this._logInfo(
-          'setTargetTemperature: ' +
-          newSettings.Operation_Mode +
-          ' : ' +
-          cToF(value),
-        );
+          `Setting target temperature ${heatingCoolingStates[newSettings.Operation_Mode]}: ${cToF(value)}F ${value}C`);
+      } else {
+        this._logDebug(`Operation mode is ${heatingCoolingStates[3]}, not setting target temperature.`);
       }
 
     } catch (e) {
