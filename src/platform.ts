@@ -24,6 +24,7 @@ export class LennoxIComfortPlatform implements DynamicPlatformPlugin {
   icomfort: iComfort;
   service: any;
   temperatureUnit: any;
+  debug: boolean;
 
   constructor(
     public readonly log: Logger,
@@ -43,6 +44,12 @@ export class LennoxIComfortPlatform implements DynamicPlatformPlugin {
       username: this.username,
       password: this.password,
     });
+
+    if (config.debugmode) {
+      this.debug = true;
+    } else {
+      this.debug = false;
+    }
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
     // Dynamic Platform plugins should only register new accessories after this event was fired,
@@ -116,7 +123,7 @@ export class LennoxIComfortPlatform implements DynamicPlatformPlugin {
           // generate a unique id for the accessory this should be generated from
           // something globally unique, but constant, for example, the device serial
           // number or MAC address
-          const uuid = this.api.hap.uuid.generate(thermostat.GatewaySN);
+          const uuid = this.api.hap.uuid.generate(this.debug ? 'dev' + thermostat.GatewaySN : thermostat.GatewaySN);
           // see if an accessory with the same uuid has already been registered and restored from
           // the cached devices we stored in the `configureAccessory` method above
           const existingAccessory: PlatformAccessory<UnknownContext> | undefined =
